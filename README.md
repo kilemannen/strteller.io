@@ -1,2 +1,2 @@
 # strteller.io
-Lets have some fun
+Test your internett speed

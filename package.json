@@ -1,0 +1,9 @@
+{
+  "name": "strorrelsen-teller",
+  "version": "1.6.0",
+  "private": true,
+  "description": "Størrelsen teller – måler nedlasting og opplasting på linja di",
+  "scripts": {
+    "test": "node --test \"test/*.test.js\""
+  }
+}

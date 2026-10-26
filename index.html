@@ -57,7 +57,7 @@ button:focus-visible{outline:3px solid var(--ul);outline-offset:2px}
 <body>
 <main>
   <header>
-    <h1>Størrelsen teller <span style="font:500 .8rem var(--mono);color:var(--muted);letter-spacing:0;text-transform:none;vertical-align:middle">v1.5.0</span></h1>
+    <h1>Størrelsen teller <span style="font:500 .8rem var(--mono);color:var(--muted);letter-spacing:0;text-transform:none;vertical-align:middle">v1.6.0</span></h1>
     <p>Måler nedlasting og opplasting på linja di. Kun på WiFi eller kabel.</p>
   </header>
 
@@ -102,7 +102,9 @@ button:focus-visible{outline:3px solid var(--ul);outline-offset:2px}
 </main>
 
 <script>
-/* Størrelsen teller v1.5.0  (tidligere Linjemåler)
+/* Størrelsen teller v1.6.0  (tidligere Linjemåler)
+   1.6.0  Måleren tåler ugyldige verdier (NaN, uendelig, negative): viser 0 i stedet for «NaN» eller fullt utslag.
+          Automatiske tester lagt til for måler, tilkobling, ping, nedlasting, opplasting og pauser
    1.5.0  Nytt navn: Størrelsen teller
    1.4.3  Stopp avbryter umiddelbart; 10 s pause etter stopp
    1.4.2  Ping og jitter settes også til 0 ved start
@@ -114,7 +116,7 @@ button:focus-visible{outline:3px solid var(--ul);outline-offset:2px}
    1.2.0  Kun Cloudflare, serverinfo (server, leverandør, IP)
    1.1.0  Fast dark mode, tall flyttet under nåla
    1.0.0  Første versjon: speedometer, ping/ned/opp, sperre for mobilnett */
-const VERSION = "1.5.0";
+const VERSION = "1.6.0";
 // ---------- Servere ----------
 const SRV = {
   name: "Cloudflare",
@@ -145,7 +147,8 @@ const STREAMS = 4, UPSTREAMS = 3, DURATION = 10000, CHUNK = 25e6, UPCHUNK = 10e6
 const MARKS = [0,5,10,25,50,100,250,500,1000];
 const A0 = -120, A1 = 120, CX = 160, CY = 160, R = 120;
 function valToFrac(v){
-  v = Math.max(0, Math.min(1000, v));
+  if (!(v > 0)) return 0;                  // NaN (f.eks. 0/0 rett etter start), 0 og negative gir null utslag
+  v = Math.min(1000, v);
   for (let i=1;i<MARKS.length;i++) if (v <= MARKS[i]) {
     return (i-1 + (v-MARKS[i-1])/(MARKS[i]-MARKS[i-1]))/(MARKS.length-1);
   }
@@ -165,6 +168,7 @@ MARKS.forEach((m,i)=>{
 });
 const $ = id => document.getElementById(id);
 function setGauge(v, color){
+  if (!(v > 0) || !Number.isFinite(v)) v = 0;   // NaN, uendelig og negative verdier vises som 0
   const f = valToFrac(v);
   $("arc").setAttribute("d", f>0.002 ? arcPath(f) : "");
   if (color) $("arc").setAttribute("stroke", color);
